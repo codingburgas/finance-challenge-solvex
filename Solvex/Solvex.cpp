@@ -7,7 +7,6 @@
 
 enum WindowState {
     LOGIN,
-    SIGNUP,
     APP
 };
 
@@ -28,6 +27,7 @@ int main(void)
     WindowState giggidy = LOGIN;
     Vector2 MousePosition;
     bool LoginButtonPressed = false;
+    bool SignupButtonPressed = false;
     char UsernameinputText[32] = "Username";
     char PasswordinputText[32] = "Password";
 
@@ -46,6 +46,11 @@ int main(void)
             giggidy = APP;
             std::cout << UsernameinputText << std::endl;
         }
+        if (SignupButtonPressed)
+        {
+            SignupButtonPressed = false;
+            std::cout << "idk how to make accounts yet lolzers" << std::endl;
+        }
 
 
         // Draw
@@ -58,10 +63,9 @@ int main(void)
         case LOGIN:
             GuiTextBox(UsernameInputBounds, UsernameinputText, 32, CheckCollisionPointRec(MousePosition, UsernameInputBounds));
             GuiTextBox(UsernamePasswordBounds, PasswordinputText, 32, CheckCollisionPointRec(MousePosition, UsernamePasswordBounds));
-            LoginButtonPressed = GuiButton({ screenWidth/2 - 60, screenHeight/2, 120, 24 }, "Login");
-            break;
-        case SIGNUP:
 
+            LoginButtonPressed = GuiButton({ screenWidth/2 - 60, screenHeight/2, 60, 24 }, "Login");
+            SignupButtonPressed = GuiButton({ screenWidth/2, screenHeight/2, 60, 24 }, "Signup");
             break;
         case APP:
 
