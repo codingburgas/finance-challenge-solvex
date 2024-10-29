@@ -4,6 +4,21 @@
 #include "raygui.h"
 #include<string>
 #include<iostream>
+#include <vector>
+
+struct subAccount{
+    double balance = 0;
+    struct transactions {
+        std::vector<int> transactionAmount;
+        std::vector<std::string> transactionName;
+    };
+};
+
+struct account {
+    std::string username;
+    std::string password;
+    std::vector<subAccount> subAccounts;
+};
 
 enum WindowState {
     LOGIN,
