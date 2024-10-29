@@ -6,22 +6,18 @@
 #include<iostream>
 #include <vector>
 
-struct subAccount{
-    double balance = 0;
-    struct transactions {
-        std::vector<int> transactionAmount;
-        std::vector<std::string> transactionName;
-    };
+struct TRANSACTION_STRUCT {
+    std::string Note;
+    float Amount;
 };
 
-struct account {
-    std::string username;
-    std::string password;
-    std::vector<subAccount> subAccounts;
+struct TAB_STRUCT{
+    std::string tabName;
+    std::vector<TRANSACTION_STRUCT> transaction;
 };
 
 enum WindowState {
-    LOGIN,
+    ACCESS,
     APP
 };
 
@@ -35,16 +31,18 @@ int main(void)
     const int screenHeight = 500;
 
     //ALL BOXES WILL HAVE THEIR BOUNDS SET HERE BEFORE INITIALISATION UNLESS THEY'RE DYNAMIC (i didnt bother doing this for half of them) 
-    const Rectangle UsernameInputBounds = { screenWidth / 2 - 60, screenHeight / 2 - 100, 120, 24 };
+    const Rectangle UsernameInputBounds = { screenWidth / 2 - 60, screenHeight / 2 - 100, 120, 24 }; // 
     const Rectangle UsernamePasswordBounds = { screenWidth / 2 - 60, screenHeight / 2 - 50, 120, 24 };
 
     //will not keep the name giggidy for the window state i just couldn't think of a word yet (i am 90% sure this will not be changed)
-    WindowState giggidy = LOGIN;
+    WindowState giggidy = ACCESS;
     Vector2 MousePosition;
     bool LoginButtonPressed = false;
     bool SignupButtonPressed = false;
     char UsernameinputText[32] = "Username";
     char PasswordinputText[32] = "Password";
+
+    std::vector<TAB_STRUCT> account;
 
     InitWindow(screenWidth, screenHeight, "Solvex");
 
@@ -58,13 +56,26 @@ int main(void)
         if (LoginButtonPressed)
         {
             LoginButtonPressed = false;
+
             giggidy = APP;
             std::cout << UsernameinputText << std::endl;
         }
         if (SignupButtonPressed)
         {
-            SignupButtonPressed = false;
-            std::cout << "idk how to make accounts yet lolzers" << std::endl;
+            account.push_back({
+                UsernameinputText, // tabName for the new subaccount
+                {
+                  {
+                    "Transaction 1",
+                    300.0f
+                  }, // First transaction for the second account
+                  {
+                    "Transaction 2",
+                    400.0f
+                  } // Second transaction for the second account
+                }
+             });
+            account[0].transaction.push_back({ "Transaction 3", 300.0f });
         }
 
 
@@ -75,7 +86,7 @@ int main(void)
 
         switch (giggidy)
         {
-        case LOGIN:
+        case ACCESS:
             GuiTextBox(UsernameInputBounds, UsernameinputText, 32, CheckCollisionPointRec(MousePosition, UsernameInputBounds));
             GuiTextBox(UsernamePasswordBounds, PasswordinputText, 32, CheckCollisionPointRec(MousePosition, UsernamePasswordBounds));
 
@@ -85,20 +96,20 @@ int main(void)
         case APP:
 
             //THIS IS ONLY FOR TESTING PURPOSES
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < account[0].transaction.size(); i++)
             {
                 if (i % 2 == 0) DrawRectangle(screenWidth / 2, (30 + 20 * i), 200, 20, Fade(LIGHTGRAY, 0.5f));
                 else DrawRectangle(screenWidth / 2, (30 + 20 * i), 200, 20, Fade(LIGHTGRAY, 0.3f));
 
-                if (i < 5 - 1)
+                if (i < account[0].transaction.size() - 1)
                 {
-                    DrawText("word", screenWidth / 2, (36 + 20 * i), 10, DARKGRAY);
-                    DrawText("num", screenWidth / 2 + 30, (36 + 20 * i), 10, DARKGRAY);
+                    DrawText(account[0].transaction[i].Note.c_str(), screenWidth / 2, (36 + 20 * i), 10, DARKGRAY);
+                    DrawText("12", screenWidth / 2 + 80, (36 + 20 * i), 10, DARKGRAY);
                 }
                 else
                 {
-                    DrawText("rizz", screenWidth / 2, (36 + 20 * i), 10, MAROON);
-                    DrawText("13", screenWidth / 2 + 30, (36 + 20 * i), 10, MAROON);
+                    DrawText(account[0].transaction[i].Note.c_str(), screenWidth / 2, (36 + 20 * i), 10, MAROON);
+                    DrawText("13", screenWidth / 2 + 80, (36 + 20 * i), 10, MAROON);
                 }
             }
             break;
