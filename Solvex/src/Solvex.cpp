@@ -155,11 +155,15 @@ int main(void)
                 if (i < account.size())
                 {
                     if (GuiButton(iTabButtonBounds, account[i].tabName.c_str())) {
-                        selectedTab = i;
+                        selectedTab = (selectedTab != NULL) ? i : 0;
+                        //if the tab is NULL then we turn it into 0
                     }
                     if (GuiButton({ iTabButtonBounds.x, iTabButtonBounds.y - 24, iTabButtonBounds.width, iTabButtonBounds.height}, "REMOVE")) {
                         account.erase(account.begin() + i);
-                        selectedTab--; //if we dont backtrack the selected tab it will try to read out of range memory and crash
+
+                        selectedTab = (selectedTab !=0) ? selectedTab-1 : NULL;
+                        //if we remove the last tab while reading from it then the program will crash because we are trying to read from a nonexistent index
+                        //if we backtrack on index 0 it would become index -1 and if we add it would become index 1 which would still not exist if we create a new one
                     }
                 }
                 else
