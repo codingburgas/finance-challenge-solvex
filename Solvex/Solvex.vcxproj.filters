@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Solvex.cpp">
+    <ClCompile Include="src\Solvex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

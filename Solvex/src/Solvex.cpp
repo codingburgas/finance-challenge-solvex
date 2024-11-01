@@ -7,8 +7,8 @@
 #include <vector>
 
 struct TRANSACTION_STRUCT {
-    std::string Note;
-    float Amount;
+    std::string note;
+    float amount;
 };
 
 struct TAB_STRUCT{
@@ -53,29 +53,39 @@ int main(void)
     {
         // Update your variables here BEFORE DRAWING unless necessary
         MousePosition = GetMousePosition();
-        if (LoginButtonPressed)
+        //Window state specific logic goes here (so it doesnt run needlessly (beep boop totally made by chatgpt))
+        switch (giggidy)
         {
-            LoginButtonPressed = false;
+        case ACCESS:
+            if (LoginButtonPressed)
+            {
+                LoginButtonPressed = false;
 
-            giggidy = APP;
-            std::cout << UsernameinputText << std::endl;
-        }
-        if (SignupButtonPressed)
+                giggidy = APP;
+                std::cout << UsernameinputText << std::endl;
+            }
+            if (SignupButtonPressed)
+            {
+                account.push_back({
+                    UsernameinputText, // tabName for the new subaccount
+                    {
+                      {
+                        "Transaction 1",
+                        300.0f
+                      }, // First transaction for the second account
+                      {
+                        "Transaction 2",
+                        400.0f
+                      } // Second transaction for the second account
+                    }
+                    });
+                account[0].transaction.push_back({ "Transaction 3", 300.0f });
+            }
+            break;
+        case APP:
         {
-            account.push_back({
-                UsernameinputText, // tabName for the new subaccount
-                {
-                  {
-                    "Transaction 1",
-                    300.0f
-                  }, // First transaction for the second account
-                  {
-                    "Transaction 2",
-                    400.0f
-                  } // Second transaction for the second account
-                }
-             });
-            account[0].transaction.push_back({ "Transaction 3", 300.0f });
+            break;
+        }
         }
 
 
@@ -103,17 +113,16 @@ int main(void)
 
                 if (i < account[0].transaction.size() - 1)
                 {
-                    DrawText(account[0].transaction[i].Note.c_str(), screenWidth / 2, (36 + 20 * i), 10, DARKGRAY);
+                    DrawText(account[0].transaction[i].note.c_str(), screenWidth / 2, (36 + 20 * i), 10, DARKGRAY);
                     DrawText("12", screenWidth / 2 + 80, (36 + 20 * i), 10, DARKGRAY);
                 }
                 else
                 {
-                    DrawText(account[0].transaction[i].Note.c_str(), screenWidth / 2, (36 + 20 * i), 10, MAROON);
+                    DrawText(account[0].transaction[i].note.c_str(), screenWidth / 2, (36 + 20 * i), 10, MAROON);
                     DrawText("13", screenWidth / 2 + 80, (36 + 20 * i), 10, MAROON);
                 }
             }
             break;
-        default: break;
         }
 
         EndDrawing();
