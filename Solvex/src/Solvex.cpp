@@ -167,20 +167,21 @@ int main(void)
             BeginScissorMode(scrollPanelBounds.x, scrollPanelBounds.y, scrollPanelBounds.width, scrollPanelBounds.height);
             
             for (int i = 0;i < account[selectedTab].transaction.size(); i++) {
+                int index = account[selectedTab].transaction.size() - i - 1; //index is used for displaying the transactions from the last upward so the latest one is at the top
                 float transactionYPosition = scrollPanelBounds.y + scrollOffset.y + (i * transactionElementHeight);
                 Color backgroundColor = (i % 2 == 0) ? Fade(LIGHTGRAY, 0.5f) : Fade(LIGHTGRAY, 0.3f); //GRAY and LIGHTGRAY look bad together so i used fade which applies transparency
-                Color textColor = (account[selectedTab].transaction[i].amount < 0) ? RED : DARKGREEN; //normal green was hard to read on the background
+                Color textColor = (account[selectedTab].transaction[index].amount < 0) ? RED : DARKGREEN; //normal green was hard to read on the background
                 DrawRectangle(scrollPanelBounds.x, transactionYPosition, transactionElementWidth, transactionElementHeight, backgroundColor);
 
                 // Draw text and corresponding number
-                DrawText(account[selectedTab].transaction[i].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 10, 10, DARKGRAY);
-                std::string numberText = std::to_string(account[selectedTab].transaction[i].amount);
+                DrawText(account[selectedTab].transaction[index].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 10, 10, DARKGRAY);
+                std::string numberText = std::to_string(account[selectedTab].transaction[index].amount);
                 DrawText(numberText.c_str(), scrollPanelBounds.x + transactionElementWidth - MeasureText(numberText.c_str(), 10) - 15, transactionYPosition + 10, 10, textColor);
 
                 // Generates the remove button
                 Rectangle removeButtonBounds = { scrollPanelBounds.x + transactionElementWidth + 5, transactionYPosition + 5, 70, 20 };
                 if (GuiButton(removeButtonBounds, "REMOVE")) {
-                    account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + i);
+                    account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + index);
                 }
             }
             EndScissorMode();
