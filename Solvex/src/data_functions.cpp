@@ -21,11 +21,11 @@ void accountSave(std::vector<TAB_STRUCT> account, std::string username, std::str
 }
 
 fileError accountLoad(std::vector<TAB_STRUCT> *account, std::string username, std::string password) {
-    std::ifstream file(username + ".txt", std::ios::trunc);
+    std::ifstream file(username + ".txt", std::ios::in);
     if (!file) {
         return NOT_EXIST;
     }
-    std::vector<TAB_STRUCT> altAccount;
+    std::vector<TAB_STRUCT> altAccount; 
     int tabIndex = -1;
     int transactionIndex = -1;
     float sum = 0;
