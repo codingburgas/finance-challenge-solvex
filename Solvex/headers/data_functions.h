@@ -7,7 +7,8 @@ enum fileError {
     FINE,
     NOT_EXIST,
     INTEGRITY,
-    CORRUPTED
+    CORRUPTED,
+    WRONG_PASS
 };
 
 struct TRANSACTION_STRUCT {
@@ -22,4 +23,4 @@ struct TAB_STRUCT {
 
 void accountSave(std::vector<TAB_STRUCT> account, std::string username, std::string password);
 
-fileError accountLoad(std::vector<TAB_STRUCT> *account,std::string username, std::string password);
+fileError accountLoad(std::vector<TAB_STRUCT>* account, std::string username, std::string password, bool integrity_acknowledged);

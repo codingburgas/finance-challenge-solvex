@@ -31,7 +31,7 @@ int main(void)
 
     //stuff for the scrollbox elements
     const int transactionElementHeight = 30;
-    const int transactionElementWidth = 1220-94;
+    const int transactionElementWidth = 1220 - 94;
 
     //will not keep the name giggidy for the window state i just couldn't think of a word yet (i am 90% sure this will not be changed)
     WindowState Window = ACCESS;
@@ -39,10 +39,12 @@ int main(void)
     Vector2 scrollOffset = { 0, 0 };
     bool loginButtonPressed = false;
     bool signupButtonPressed = false;
+    bool acknowledge_tampering = false;
     bool saveButtonPressed = false;
     bool newTransactionButtonPressed = false;
     char usernameInputText[32] = "Username";
     char passwordInputText[32] = "Password";
+    std::string loginErrorText = "";
     char newTabInputText[32] = "";
     char newTransactionNoteInputText[128] = "Note";
     char newTransactionPriceInputText[32] = "0";
@@ -67,14 +69,38 @@ int main(void)
             {
                 loginButtonPressed = false;
 
-                accountLoad(&account, usernameInputText, passwordInputText);
+                if (strlen(passwordInputText) <= 4)
+                {
+                    loginErrorText = "password must be longer than 4 characters";
+                    break;
+                }
 
-                Window = APP;
+                switch (accountLoad(&account, usernameInputText, passwordInputText, acknowledge_tampering))
+                {
+                case FINE:
+                    Window = APP;
+                    break;
+                case NOT_EXIST:
+                    loginErrorText = "Account does not exist";
+                    break;
+                case INTEGRITY:
+                    loginErrorText = "Account may have been tampered with, click login again to acknowledge";
+                    acknowledge_tampering = true;
+                    break;
+                case CORRUPTED:
+                    loginErrorText = "Account file is corrupted";
+                    break;
+                case WRONG_PASS:
+                    loginErrorText = "Account password is wrong";
+                    break;
+
+                }
+
             }
             if (signupButtonPressed)
             {
                 signupButtonPressed = false;
-                
+
                 account.push_back({ usernameInputText });
 
                 Window = APP;
@@ -104,7 +130,7 @@ int main(void)
                 newTransactionButtonPressed = false;
                 if (!account.size()) break;
 
-                account[selectedTab].transaction.push_back({ newTransactionNoteInputText, std::stof(newTransactionPriceInputText)});
+                account[selectedTab].transaction.push_back({ newTransactionNoteInputText, std::stof(newTransactionPriceInputText) });
             }
 
             break;
@@ -113,7 +139,7 @@ int main(void)
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
-        
+
         switch (Window)
         {
         case ACCESS:
@@ -121,8 +147,10 @@ int main(void)
             GuiTextBox(usernameInputBounds, usernameInputText, 32, CheckCollisionPointRec(mousePosition, usernameInputBounds));
             GuiTextBox(passwordInputBounds, passwordInputText, 32, CheckCollisionPointRec(mousePosition, passwordInputBounds));
 
-            loginButtonPressed = GuiButton({ screenWidth/2 - 60, screenHeight/2, 60, 24 }, "Login");
-            signupButtonPressed = GuiButton({ screenWidth/2, screenHeight/2, 60, 24 }, "Signup");
+            loginButtonPressed = GuiButton({ screenWidth / 2 - 60, screenHeight / 2, 60, 24 }, "Login");
+            signupButtonPressed = GuiButton({ screenWidth / 2, screenHeight / 2, 60, 24 }, "Signup");
+
+            DrawText(loginErrorText.c_str(), screenWidth / 2 - loginErrorText.size() * 5, 450, 20, RED);
             break;
 
         case APP:
@@ -132,7 +160,7 @@ int main(void)
             for (size_t i = 0; i <= account.size(); i++)
             {
                 Rectangle iTabButtonBounds = tabButtonBounds;
-                iTabButtonBounds.x += tabButtonBounds.width*i;
+                iTabButtonBounds.x += tabButtonBounds.width * i;
                 if (i < account.size())
                 {
                     if (GuiButton(iTabButtonBounds, account[i].tabName.c_str())) {
@@ -146,7 +174,7 @@ int main(void)
                 else
                 {
                     if (GuiButton(iTabButtonBounds, "ADD")) {
-                        account.push_back({newTabInputText});
+                        account.push_back({ newTabInputText });
                         newTabInputText[0] = '\0';
                     }
 
@@ -165,22 +193,23 @@ int main(void)
             GuiScrollPanel(scrollPanelBounds, nullptr, { 0, 0, 380, float((account[selectedTab].transaction.size() * transactionElementHeight)) }, &scrollOffset, nullptr);
 
             BeginScissorMode(scrollPanelBounds.x, scrollPanelBounds.y, scrollPanelBounds.width, scrollPanelBounds.height);
-            
-            for (int i = 0;i < account[selectedTab].transaction.size(); i++) {
+
+            for (int i = 0; i < account[selectedTab].transaction.size(); i++) {
+                int index = account[selectedTab].transaction.size() - i - 1; //index is used for displaying the transactions from the last upward so the latest one is at the top
                 float transactionYPosition = scrollPanelBounds.y + scrollOffset.y + (i * transactionElementHeight);
                 Color backgroundColor = (i % 2 == 0) ? Fade(LIGHTGRAY, 0.5f) : Fade(LIGHTGRAY, 0.3f); //GRAY and LIGHTGRAY look bad together so i used fade which applies transparency
-                Color textColor = (account[selectedTab].transaction[i].amount < 0) ? RED : DARKGREEN; //normal green was hard to read on the background
+                Color textColor = (account[selectedTab].transaction[index].amount < 0) ? RED : DARKGREEN; //normal green was hard to read on the background
                 DrawRectangle(scrollPanelBounds.x, transactionYPosition, transactionElementWidth, transactionElementHeight, backgroundColor);
 
                 // Draw text and corresponding number
-                DrawText(account[selectedTab].transaction[i].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 10, 10, DARKGRAY);
-                std::string numberText = std::to_string(account[selectedTab].transaction[i].amount);
+                DrawText(account[selectedTab].transaction[index].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 10, 10, DARKGRAY);
+                std::string numberText = std::to_string(account[selectedTab].transaction[index].amount);
                 DrawText(numberText.c_str(), scrollPanelBounds.x + transactionElementWidth - MeasureText(numberText.c_str(), 10) - 15, transactionYPosition + 10, 10, textColor);
 
                 // Generates the remove button
                 Rectangle removeButtonBounds = { scrollPanelBounds.x + transactionElementWidth + 5, transactionYPosition + 5, 70, 20 };
                 if (GuiButton(removeButtonBounds, "REMOVE")) {
-                    account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + i);
+                    account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + index);
                 }
             }
             EndScissorMode();
