@@ -3,18 +3,7 @@
 #include "raylib.h"
 #include "raygui.h"
 #include<string>
-#include<iostream>
-#include <vector>
-
-struct TRANSACTION_STRUCT {
-    std::string note;
-    float amount;
-};
-
-struct TAB_STRUCT{
-    std::string tabName;
-    std::vector<TRANSACTION_STRUCT> transaction;
-};
+#include "../headers/data_functions.h"
 
 enum WindowState {
     ACCESS,
@@ -78,25 +67,17 @@ int main(void)
             {
                 loginButtonPressed = false;
 
+                accountLoad(&account, usernameInputText, passwordInputText);
+
                 Window = APP;
-                std::cout << usernameInputText << std::endl;
             }
             if (signupButtonPressed)
             {
-                account.push_back({
-                    usernameInputText, // tabName for the new subaccount
-                    {
-                      {
-                        "Transaction 1",
-                        300.0f
-                      }, // First transaction for the second account
-                      {
-                        "Transaction 2",
-                        -400.0f
-                      } // Second transaction for the second account
-                    }
-                    });
-                account[0].transaction.push_back({ "Transaction 3", 300.0f });
+                signupButtonPressed = false;
+                
+                account.push_back({ usernameInputText });
+
+                Window = APP;
             }
             break;
 
@@ -115,7 +96,7 @@ int main(void)
             {
                 saveButtonPressed = false;
 
-                std::cout << "no saving implemented yet lolololol" << std::endl;
+                accountSave(account, usernameInputText, passwordInputText);
             }
 
             if (newTransactionButtonPressed)
