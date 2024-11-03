@@ -10,8 +10,10 @@ enum WindowState {
     APP
 };
 
-// Program main entry point
+//function to update sum
+std::string updateSum(TAB_STRUCT account);
 
+// Program main entry point
 int main(void)
 {
     // Initialization
@@ -49,7 +51,6 @@ int main(void)
     char newTransactionAmountInputText[32] = "0";
     std::string tabSum = "SUM: 0";
     float newTransactionAmountInputFloat = 0;
-    float sum = 0;
 
     std::vector<TAB_STRUCT> account;
     int selectedTab = 0;
@@ -87,11 +88,7 @@ int main(void)
                     selectedTab = 0;
 
 
-                    for (int i = 0; i < account[selectedTab].transaction.size(); i++)
-                    {
-                        sum += account[selectedTab].transaction[i].amount;
-                    }
-                    tabSum = "SUM: " + std::to_string(sum);
+
 
                     break;
                 case NOT_EXIST:
@@ -140,12 +137,7 @@ int main(void)
 
                 account[selectedTab].transaction.push_back({ newTransactionNoteInputText, std::stof(newTransactionAmountInputText) });
 
-                sum = 0;
-                for (int i = 0; i < account[selectedTab].transaction.size(); i++)
-                {
-                    sum += account[selectedTab].transaction[i].amount;
-                }
-                tabSum = "SUM: " + std::to_string(sum);
+                tabSum = updateSum(account[selectedTab]);
             }
 
             break;
@@ -191,11 +183,15 @@ int main(void)
                     //when you click a tab you select it
                     if (GuiButton(iTabButtonBounds, account[i].tabName.c_str())) {
                         selectedTab = i;
+
+                        tabSum = updateSum(account[selectedTab]);
                     }
                     //draws remove button (if you remove a tab you are viewing you view the one before it unless it was the last one)
                     if (GuiButton({ iTabButtonBounds.x, iTabButtonBounds.y - 24, iTabButtonBounds.width, iTabButtonBounds.height }, "REMOVE")) {
                         account.erase(account.begin() + i);
                         selectedTab = (selectedTab != 0) ? selectedTab - 1 : 0; //if we dont backtrack the selected tab it will try to read out of range memory and crash
+
+                        if (account.size()) tabSum = updateSum(account[selectedTab]);
                     }
                 }
                 else
@@ -253,6 +249,8 @@ int main(void)
                 if (GuiButton(removeButtonBounds, "REMOVE")) {
                     //removes the transaction on the index
                     account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + index);
+
+                    tabSum = updateSum(account[selectedTab]);
                 }
             }
             EndScissorMode();
@@ -266,4 +264,14 @@ int main(void)
     CloseWindow();
 
     return 0;
+}
+
+std::string updateSum(TAB_STRUCT account)
+{
+    float sum = 0;
+    for (int i = 0; i < account.transaction.size(); i++)
+    {
+        sum += account.transaction[i].amount;
+    }
+    return ("SUM: " + std::to_string(sum));
 }
