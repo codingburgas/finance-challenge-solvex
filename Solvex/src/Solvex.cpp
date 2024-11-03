@@ -1,8 +1,8 @@
 #define RAYGUI_IMPLEMENTATION
+//had to add this cause raygui.h has warnings
 #define _CRT_SECURE_NO_WARNINGS
 #include "raylib.h"
 #include "raygui.h"
-#include<string>
 #include "../headers/data_functions.h"
 
 enum WindowState {
@@ -23,17 +23,16 @@ int main(void)
     const Rectangle usernameInputBounds = { screenWidth / 2 - 60, screenHeight / 2 - 100, 120, 24 };
     const Rectangle passwordInputBounds = { screenWidth / 2 - 60, screenHeight / 2 - 50, 120, 24 };
     const Rectangle newTransactionNoteInputBounds = { 30, 200, 120, 24 };
-    const Rectangle newTransactionPriceInputBounds = { 150, 200, 120, 24 };
+    const Rectangle newTransactionAmountInputBounds = { 150, 200, 120, 24 };
     const Rectangle newTransactionButtonBounds = { 370, 200, 120, 24 };
     const Rectangle saveButtonBounds = { 0, 0, 60, 24 };
     const Rectangle tabButtonBounds = { 30, 100, 60, 24 };
-    const Rectangle scrollPanelBounds = { 30, 250, 1220, 200 };
+    const Rectangle scrollPanelBounds = { 30, 250, 1220, 400 };
 
     //stuff for the scrollbox elements
     const int transactionElementHeight = 30;
     const int transactionElementWidth = 1220 - 94;
 
-    //will not keep the name giggidy for the window state i just couldn't think of a word yet (i am 90% sure this will not be changed)
     WindowState Window = ACCESS;
     Vector2 mousePosition;
     Vector2 scrollOffset = { 0, 0 };
@@ -47,7 +46,10 @@ int main(void)
     std::string loginErrorText = "";
     char newTabInputText[32] = "";
     char newTransactionNoteInputText[128] = "Note";
-    char newTransactionPriceInputText[32] = "0";
+    char newTransactionAmountInputText[32] = "0";
+    std::string tabSum = "SUM: 0";
+    float newTransactionAmountInputFloat = 0;
+    float sum = 0;
 
     std::vector<TAB_STRUCT> account;
     int selectedTab = 0;
@@ -79,6 +81,15 @@ int main(void)
                 {
                 case FINE:
                     Window = APP;
+                    selectedTab = 0;
+
+
+                    for (int i = 0; i < account[selectedTab].transaction.size(); i++)
+                    {
+                        sum += account[selectedTab].transaction[i].amount;
+                    }
+                    tabSum = "SUM: " + std::to_string(sum);
+
                     break;
                 case NOT_EXIST:
                     loginErrorText = "Account does not exist";
@@ -93,9 +104,7 @@ int main(void)
                 case WRONG_PASS:
                     loginErrorText = "Account password is wrong";
                     break;
-
                 }
-
             }
             if (signupButtonPressed)
             {
@@ -108,16 +117,6 @@ int main(void)
             break;
 
         case APP:
-            //checks if char array is empty and if it isn't then it checks if the last char is a number or a dot and if it isn't it deletes the last char
-            if (strlen(newTransactionPriceInputText) > 0)
-            {
-                if (!(newTransactionPriceInputText[std::strlen(newTransactionPriceInputText) - 1] >= '0' && newTransactionPriceInputText[std::strlen(newTransactionPriceInputText) - 1] <= '9' || newTransactionPriceInputText[std::strlen(newTransactionPriceInputText) - 1] == '.'))
-                {
-                    newTransactionPriceInputText[std::strlen(newTransactionPriceInputText) - 1] = '\0';
-                }
-            }
-
-
             if (saveButtonPressed)
             {
                 saveButtonPressed = false;
@@ -130,7 +129,14 @@ int main(void)
                 newTransactionButtonPressed = false;
                 if (!account.size()) break;
 
-                account[selectedTab].transaction.push_back({ newTransactionNoteInputText, std::stof(newTransactionPriceInputText) });
+                account[selectedTab].transaction.push_back({ newTransactionNoteInputText, std::stof(newTransactionAmountInputText) });
+
+                sum = 0;
+                for (int i = 0; i < account[selectedTab].transaction.size(); i++)
+                {
+                    sum += account[selectedTab].transaction[i].amount;
+                }
+                tabSum = "SUM: " + std::to_string(sum);
             }
 
             break;
@@ -150,7 +156,7 @@ int main(void)
             loginButtonPressed = GuiButton({ screenWidth / 2 - 60, screenHeight / 2, 60, 24 }, "Login");
             signupButtonPressed = GuiButton({ screenWidth / 2, screenHeight / 2, 60, 24 }, "Signup");
 
-            DrawText(loginErrorText.c_str(), screenWidth / 2 - loginErrorText.size() * 5, 450, 20, RED);
+            DrawText(loginErrorText.c_str(), screenWidth / 2 - MeasureText(loginErrorText.c_str(), 10), 450, 20, RED);
             break;
 
         case APP:
@@ -185,11 +191,18 @@ int main(void)
             }
 
             GuiTextBox(newTransactionNoteInputBounds, newTransactionNoteInputText, 32, CheckCollisionPointRec(mousePosition, newTransactionNoteInputBounds));
-            GuiTextBox(newTransactionPriceInputBounds, newTransactionPriceInputText, 32, CheckCollisionPointRec(mousePosition, newTransactionPriceInputBounds));
+            GuiValueBoxFloat(newTransactionAmountInputBounds, "", newTransactionAmountInputText, &newTransactionAmountInputFloat, CheckCollisionPointRec(mousePosition, newTransactionAmountInputBounds));
             newTransactionButtonPressed = GuiButton(newTransactionButtonBounds, "ADD");
 
-            if (!account.size()) break;
+            DrawText(tabSum.c_str(), 370 - MeasureText(tabSum.c_str(), 5) - 15, 200+6, 10, (std::stof(tabSum.substr(4)) < 0 )? RED : DARKGREEN);
 
+            if (!account.size())
+            {
+                tabSum = "SUM: 0";
+                break;
+            }
+
+            //this is all for the transaction list
             GuiScrollPanel(scrollPanelBounds, nullptr, { 0, 0, 380, float((account[selectedTab].transaction.size() * transactionElementHeight)) }, &scrollOffset, nullptr);
 
             BeginScissorMode(scrollPanelBounds.x, scrollPanelBounds.y, scrollPanelBounds.width, scrollPanelBounds.height);
@@ -202,9 +215,9 @@ int main(void)
                 DrawRectangle(scrollPanelBounds.x, transactionYPosition, transactionElementWidth, transactionElementHeight, backgroundColor);
 
                 // Draw text and corresponding number
-                DrawText(account[selectedTab].transaction[index].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 10, 10, DARKGRAY);
+                DrawText(account[selectedTab].transaction[index].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 6, 20, DARKGRAY);
                 std::string numberText = std::to_string(account[selectedTab].transaction[index].amount);
-                DrawText(numberText.c_str(), scrollPanelBounds.x + transactionElementWidth - MeasureText(numberText.c_str(), 10) - 15, transactionYPosition + 10, 10, textColor);
+                DrawText(numberText.c_str(), scrollPanelBounds.x + transactionElementWidth - MeasureText(numberText.c_str(), 20) - 15, transactionYPosition + 6, 20, textColor);
 
                 // Generates the remove button
                 Rectangle removeButtonBounds = { scrollPanelBounds.x + transactionElementWidth + 5, transactionYPosition + 5, 70, 20 };
