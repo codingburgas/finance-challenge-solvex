@@ -201,15 +201,13 @@ int main(void)
                 else
                 {
                     //draws the add button
-                    if (GuiButton(iTabButtonBounds, "ADD")) {
+                    if (GuiButton({ iTabButtonBounds.x, iTabButtonBounds.y - 24, iTabButtonBounds.width, iTabButtonBounds.height }, "ADD")) {
                         account.push_back({ newTabInputText });
                         newTabInputText[0] = '\0';
                     }
 
                     //draws the name input box below it
-                    Rectangle newTabInputBounds = iTabButtonBounds;
-                    newTabInputBounds.y += tabButtonBounds.height;
-                    GuiTextBox(newTabInputBounds, newTabInputText, 32, CheckCollisionPointRec(mousePosition, newTabInputBounds));
+                    GuiTextBox(iTabButtonBounds, newTabInputText, 32, CheckCollisionPointRec(mousePosition, iTabButtonBounds));
                 }
             }
 
