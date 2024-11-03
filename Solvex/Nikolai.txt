@@ -1,0 +1,7 @@
+PAS:BS_@Y
+TAB:=l
+SUM:GW\DB_\
+TRN:&
+TRF:FQ\DB_\
+TRN:	
+TRF:^U\DB_\
