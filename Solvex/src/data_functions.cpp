@@ -5,18 +5,20 @@ bool debugging_enabled = false;
 
 //xor encryption and apparently it's insecure but better than nothing
 std::string encryptDecrypt(std::string data, std::string password) {
+    //doesn't encrypt if debugging is enabled
     if (debugging_enabled) return data;
 
-
+    //adds a salt because if we encrypt the password with itself it did nothing
     password = "saltlol" + password;
     for (size_t i = 0; i < data.size(); ++i) {
         data[i] ^= password[i % password.size()];
+        //windows apparently saves newlines as two bytes but programs still display a newline with only one of the two bytes so if you open the file in a text editor and save it without doing anything else it would become corrupt because it would add the first byte
         if (data[i] == '\0') data[i] ^= password[i % password.size()]; //file gets corrupted if the character becomes a newline so we switch it back, still secure probably
     }
     return data;
 }
 
-
+//saves account to file
 void accountSave(std::vector<TAB_STRUCT> account, std::string username, std::string password) {
     float sum;
     std::ofstream file(username + ".txt", std::ios::trunc);
@@ -38,6 +40,7 @@ void accountSave(std::vector<TAB_STRUCT> account, std::string username, std::str
     file.close();
 }
 
+// loads account from file
 fileError accountLoad(std::vector<TAB_STRUCT>* account, std::string username, std::string password, bool integrity_acknowledged) {
     std::ifstream file(username + ".txt", std::ios::in);
     if (!file) {
@@ -51,6 +54,7 @@ fileError accountLoad(std::vector<TAB_STRUCT>* account, std::string username, st
 
     std::string line;
     getline(file, line);
+    if (line.size() < 4) return CORRUPTED;
 
     std::string temp = line.substr(0, 4);
     std::string data = line.substr(4);

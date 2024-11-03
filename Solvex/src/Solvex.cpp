@@ -63,10 +63,12 @@ int main(void)
     {
         // Update your variables here BEFORE DRAWING unless necessary
         mousePosition = GetMousePosition();
-        //Window state specific logic goes here (so it doesnt run needlessly (beep boop totally made by chatgpt))
+
+        //Window state for logic
         switch (Window)
         {
         case ACCESS:
+            //runs when the login button is pressed 
             if (loginButtonPressed)
             {
                 loginButtonPressed = false;
@@ -77,6 +79,7 @@ int main(void)
                     break;
                 }
 
+                //loads the account file and returns a status enum directly into a switch case
                 switch (accountLoad(&account, usernameInputText, passwordInputText, acknowledge_tampering))
                 {
                 case FINE:
@@ -106,6 +109,8 @@ int main(void)
                     break;
                 }
             }
+
+            //when the sign up button is pressed a single tab is created with the username as the name
             if (signupButtonPressed)
             {
                 signupButtonPressed = false;
@@ -116,7 +121,10 @@ int main(void)
             }
             break;
 
+            //logic for the actual app
         case APP:
+
+            //runs when the save button is pressed also only saves the account on user request
             if (saveButtonPressed)
             {
                 saveButtonPressed = false;
@@ -124,6 +132,7 @@ int main(void)
                 accountSave(account, usernameInputText, passwordInputText);
             }
 
+            //runs when the new transaction button is pressed and creates a new transaction and updates the sum
             if (newTransactionButtonPressed)
             {
                 newTransactionButtonPressed = false;
@@ -141,37 +150,49 @@ int main(void)
 
             break;
         }
-        // Draw
+        // Drawing starts now
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
 
+        //switch case for rendering
         switch (Window)
         {
+            //runs for the login screen
         case ACCESS:
-
+            //username input box
             GuiTextBox(usernameInputBounds, usernameInputText, 32, CheckCollisionPointRec(mousePosition, usernameInputBounds));
+            //password input box
             GuiTextBox(passwordInputBounds, passwordInputText, 32, CheckCollisionPointRec(mousePosition, passwordInputBounds));
 
+            //login button
             loginButtonPressed = GuiButton({ screenWidth / 2 - 60, screenHeight / 2, 60, 24 }, "Login");
+            //sign up button
             signupButtonPressed = GuiButton({ screenWidth / 2, screenHeight / 2, 60, 24 }, "Signup");
 
+            //draws the error message if there is one
             DrawText(loginErrorText.c_str(), screenWidth / 2 - MeasureText(loginErrorText.c_str(), 10), 450, 20, RED);
             break;
 
+
+            //rendering for the actual app
         case APP:
+
+            //draws the save button
             saveButtonPressed = GuiButton(saveButtonBounds, "Save");
 
-
+            //draws the tabs
             for (size_t i = 0; i <= account.size(); i++)
             {
                 Rectangle iTabButtonBounds = tabButtonBounds;
                 iTabButtonBounds.x += tabButtonBounds.width * i;
                 if (i < account.size())
                 {
+                    //when you click a tab you select it
                     if (GuiButton(iTabButtonBounds, account[i].tabName.c_str())) {
                         selectedTab = i;
                     }
+                    //draws remove button (if you remove a tab you are viewing you view the one before it unless it was the last one)
                     if (GuiButton({ iTabButtonBounds.x, iTabButtonBounds.y - 24, iTabButtonBounds.width, iTabButtonBounds.height }, "REMOVE")) {
                         account.erase(account.begin() + i);
                         selectedTab = (selectedTab != 0) ? selectedTab - 1 : 0; //if we dont backtrack the selected tab it will try to read out of range memory and crash
@@ -179,23 +200,30 @@ int main(void)
                 }
                 else
                 {
+                    //draws the add button
                     if (GuiButton(iTabButtonBounds, "ADD")) {
                         account.push_back({ newTabInputText });
                         newTabInputText[0] = '\0';
                     }
 
+                    //draws the name input box below it
                     Rectangle newTabInputBounds = iTabButtonBounds;
                     newTabInputBounds.y += tabButtonBounds.height;
                     GuiTextBox(newTabInputBounds, newTabInputText, 32, CheckCollisionPointRec(mousePosition, newTabInputBounds));
                 }
             }
 
+            //draws the transaction note
             GuiTextBox(newTransactionNoteInputBounds, newTransactionNoteInputText, 32, CheckCollisionPointRec(mousePosition, newTransactionNoteInputBounds));
+            //draws the transaction amount
             GuiValueBoxFloat(newTransactionAmountInputBounds, "", newTransactionAmountInputText, &newTransactionAmountInputFloat, CheckCollisionPointRec(mousePosition, newTransactionAmountInputBounds));
+            //draws the button that adds a new transaction
             newTransactionButtonPressed = GuiButton(newTransactionButtonBounds, "ADD");
 
-            DrawText(tabSum.c_str(), 1260 - MeasureText(tabSum.c_str(), 20) - 15, 200+6, 20, (std::stof(tabSum.substr(4)) < 0 )? RED : DARKGREEN);
+            //draws the sum text
+            DrawText(tabSum.c_str(), 1260 - MeasureText(tabSum.c_str(), 20) - 15, 200 + 6, 20, (std::stof(tabSum.substr(4)) < 0) ? RED : DARKGREEN);
 
+            //stops rendering if there are no tabs because it will crash
             if (!account.size())
             {
                 tabSum = "SUM: 0";
@@ -205,6 +233,7 @@ int main(void)
             //this is all for the transaction list
             GuiScrollPanel(scrollPanelBounds, nullptr, { 0, 0, 380, float((account[selectedTab].transaction.size() * transactionElementHeight)) }, &scrollOffset, nullptr);
 
+            //renders stff inside a box and everything outside that box gets cut
             BeginScissorMode(scrollPanelBounds.x, scrollPanelBounds.y, scrollPanelBounds.width, scrollPanelBounds.height);
 
             for (int i = 0; i < account[selectedTab].transaction.size(); i++) {
@@ -212,9 +241,11 @@ int main(void)
                 float transactionYPosition = scrollPanelBounds.y + scrollOffset.y + (i * transactionElementHeight);
                 Color backgroundColor = (i % 2 == 0) ? Fade(LIGHTGRAY, 0.5f) : Fade(LIGHTGRAY, 0.3f); //GRAY and LIGHTGRAY look bad together so i used fade which applies transparency
                 Color textColor = (account[selectedTab].transaction[index].amount < 0) ? RED : DARKGREEN; //normal green was hard to read on the background
+
+                //draws the checkered (idk if thats the right word) background
                 DrawRectangle(scrollPanelBounds.x, transactionYPosition, transactionElementWidth, transactionElementHeight, backgroundColor);
 
-                // Draw text and corresponding number
+                // draws the note and amount for each transaction
                 DrawText(account[selectedTab].transaction[index].note.c_str(), scrollPanelBounds.x + 15, transactionYPosition + 6, 20, DARKGRAY);
                 std::string numberText = std::to_string(account[selectedTab].transaction[index].amount);
                 DrawText(numberText.c_str(), scrollPanelBounds.x + transactionElementWidth - MeasureText(numberText.c_str(), 20) - 15, transactionYPosition + 6, 20, textColor);
@@ -222,6 +253,7 @@ int main(void)
                 // Generates the remove button
                 Rectangle removeButtonBounds = { scrollPanelBounds.x + transactionElementWidth + 5, transactionYPosition + 5, 70, 20 };
                 if (GuiButton(removeButtonBounds, "REMOVE")) {
+                    //removes the transaction on the index
                     account[selectedTab].transaction.erase(account[selectedTab].transaction.begin() + index);
                 }
             }
