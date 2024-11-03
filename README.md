@@ -55,7 +55,7 @@ git clone https://github.com/codingburgas/finance-challenge-solvex.git
 
 ## 🖥 Team Members
 * **Hristo Rusev** - *Scrum trainer* 
-* **Nikolai Zhelyazkov** - *Back-end developer* 
+* **Nikolai Zhelyazkov** - *Back-end developer/Designer* 
 * **Stefan Radev** - *Back-end developer* 
 * **Zlatin Lazarov** - *Back-end developer*
 
