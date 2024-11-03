@@ -194,7 +194,7 @@ int main(void)
             GuiValueBoxFloat(newTransactionAmountInputBounds, "", newTransactionAmountInputText, &newTransactionAmountInputFloat, CheckCollisionPointRec(mousePosition, newTransactionAmountInputBounds));
             newTransactionButtonPressed = GuiButton(newTransactionButtonBounds, "ADD");
 
-            DrawText(tabSum.c_str(), 370 - MeasureText(tabSum.c_str(), 5) - 15, 200+6, 10, (std::stof(tabSum.substr(4)) < 0 )? RED : DARKGREEN);
+            DrawText(tabSum.c_str(), 1260 - MeasureText(tabSum.c_str(), 20) - 15, 200+6, 20, (std::stof(tabSum.substr(4)) < 0 )? RED : DARKGREEN);
 
             if (!account.size())
             {
